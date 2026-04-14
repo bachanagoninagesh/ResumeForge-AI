@@ -182,7 +182,7 @@ def _push(q: queue.Queue, msg: dict) -> None:
 def _run_job(
     job_id: str,
     resume_path: Path,
-    links_path: Path,
+    jobs_path: Path,
     output_dir: Path,
     email: str,
 ) -> None:
