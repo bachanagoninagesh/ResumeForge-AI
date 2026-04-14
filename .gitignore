@@ -3,6 +3,5 @@ __pycache__/
 *.pyc
 .env
 .DS_Store
-data/output/*.pdf
-data/output/*.json
-data/output/*.txt
+data/output/
+data/jobs/
