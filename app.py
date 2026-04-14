@@ -339,7 +339,7 @@ def _run_job(
                 "current": idx,
                 "total": total,
                 "success": True,
-                "source": str(source),
+                "source": label,
                 "company": job.company or "Unknown",
                 "title": job.title or tailored.target_title or "Unknown",
                 "filename": pdf_path.name,
