@@ -53,7 +53,7 @@ BLACK       = colors.HexColor("#000000")
 CONTACT_CLR = colors.HexColor("#111111")
 
 # ── Font-size ladder (body text) — auto-shrinks to fit 1 page ─────────────────
-_FONT_SIZES = [9.2, 8.9, 8.6, 8.3, 8.0, 7.7]
+_FONT_SIZES = [9.2, 8.8, 8.4, 8.0, 7.6, 7.2, 6.9]
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -94,13 +94,13 @@ def _build(buf: BytesIO, r: TailoredResume, fs: float) -> int:
         st.append(Paragraph(_fmt_contact(parts), S["contact"]))
 
     # ── HEADER RULE ───────────────────────────────────────────────────────────
-    st.append(Spacer(1, 0.042 * inch))
+    st.append(Spacer(1, 0.032 * inch))
     st.append(HRFlowable(width="100%", thickness=1.2, color=BLUE,
                           spaceBefore=0, spaceAfter=0))
 
     # ── PROFESSIONAL SUMMARY ──────────────────────────────────────────────────
     if r.summary:
-        st.append(Spacer(1, 0.070 * inch))
+        st.append(Spacer(1, 0.055 * inch))
         st.append(Paragraph("PROFESSIONAL SUMMARY", S["section"]))
         st.extend(_sec_rule())
         st.append(Paragraph(r.summary, S["body"]))
@@ -194,11 +194,11 @@ def _build(buf: BytesIO, r: TailoredResume, fs: float) -> int:
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _sec_gap() -> list:
-    return [Spacer(1, 0.036 * inch)]
+    return [Spacer(1, 0.028 * inch)]
 
 def _sec_rule() -> list:
     return [HRFlowable(width="100%", thickness=0.9, color=BLUE,
-                       spaceBefore=1, spaceAfter=3)]
+                       spaceBefore=1, spaceAfter=2)]
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -253,7 +253,7 @@ def _render_exp(exp, S: dict) -> list:
             if t:
                 elems.append(Paragraph(f"\u2022  {t}", S["bullet"]))
 
-    elems.append(Spacer(1, 0.026 * inch))
+    elems.append(Spacer(1, 0.018 * inch))
     return elems
 
 

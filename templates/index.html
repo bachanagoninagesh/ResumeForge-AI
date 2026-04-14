@@ -549,6 +549,33 @@
     .rc-title { font-weight: 700; font-size: 1rem; margin-top: .15rem; }
     .rc-status-icon { font-size: 1.3rem; flex-shrink: 0; }
 
+    /* ── ATS Score Hero Badge ──────────────────────────────────────────────── */
+    .ats-badge-wrap {
+      display: flex; align-items: center; gap: 1rem;
+      background: var(--bg); border-radius: 12px;
+      padding: .75rem 1rem; margin-bottom: .85rem;
+    }
+    .ats-badge {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-width: 74px; min-height: 74px; border-radius: 50%;
+      font-weight: 800; border: 4px solid currentColor;
+      flex-shrink: 0;
+    }
+    .ats-badge .ats-num  { font-size: 1.55rem; line-height: 1; }
+    .ats-badge .ats-pct  { font-size: .68rem; font-weight: 700; letter-spacing: .04em; }
+    .ats-badge.excellent { color: #22c55e; }   /* 90+ */
+    .ats-badge.good      { color: #f59e0b; }   /* 70-89 */
+    .ats-badge.fair      { color: #ef4444; }   /* <70  */
+    .ats-badge-info { flex: 1; }
+    .ats-badge-title { font-weight: 700; font-size: .95rem; color: var(--text); margin-bottom: .18rem; }
+    .ats-badge-sub   { font-size: .78rem; color: var(--text-muted); }
+    .ats-gain-chip {
+      display: inline-block; font-size: .72rem; font-weight: 700;
+      padding: .15rem .5rem; border-radius: 20px; margin-top: .3rem;
+    }
+    .ats-gain-chip.pos { background: rgba(34,197,94,.15); color: #22c55e; }
+    .ats-gain-chip.neg { background: rgba(239,68,68,.15);  color: #ef4444; }
+
     .rc-scores {
       display: flex; gap: 1rem; margin-bottom: .9rem;
     }
@@ -1273,6 +1300,9 @@
     if (msg.success) {
       const improvement = msg.post_score - msg.pre_score;
       const impSign = improvement >= 0 ? '+' : '';
+      const atsClass = msg.post_score >= 90 ? 'excellent' : msg.post_score >= 70 ? 'good' : 'fair';
+      const atsLabel = msg.post_score >= 90 ? 'Excellent ATS Match' : msg.post_score >= 70 ? 'Good ATS Match' : 'Low ATS Match';
+      const gainChipClass = improvement >= 0 ? 'pos' : 'neg';
       card.className = 'result-card success';
       card.innerHTML = `
         <div class="rc-top">
@@ -1282,24 +1312,17 @@
           </div>
           <div class="rc-status-icon">✅</div>
         </div>
-        <div class="rc-scores">
-          <div class="rc-score">
-            <div class="label">Before</div>
-            <div class="score-before">${msg.pre_score}%</div>
+        <div class="ats-badge-wrap">
+          <div class="ats-badge ${atsClass}">
+            <span class="ats-num">${msg.post_score}</span>
+            <span class="ats-pct">/ 100</span>
           </div>
-          <div class="score-arrow">→</div>
-          <div class="rc-score">
-            <div class="label">After</div>
-            <div class="score-after">${msg.post_score}%</div>
-          </div>
-          <div class="rc-score">
-            <div class="label">Gain</div>
-            <div style="color:${improvement >= 0 ? 'var(--success)' : 'var(--danger)'}">
-              ${impSign}${improvement}%
-            </div>
+          <div class="ats-badge-info">
+            <div class="ats-badge-title">ATS Match Score</div>
+            <div class="ats-badge-sub">${atsLabel} — resume tailored to this job</div>
+            <span class="ats-gain-chip ${gainChipClass}">${impSign}${improvement}% vs. original (${msg.pre_score} → ${msg.post_score})</span>
           </div>
         </div>
-        <div class="rc-msg">${escHtml(msg.message)}</div>
         <div class="rc-downloads">
           <a class="btn-download"
              href="/api/download/${encodeURIComponent(msg.job_id)}/${encodeURIComponent(msg.filename)}"

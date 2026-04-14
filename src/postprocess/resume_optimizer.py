@@ -10,14 +10,14 @@ MAX_ATS_KEYWORDS = 30
 MAX_NOTES = 8
 
 MAX_EXPERIENCE_ROLES = 2
-MAX_BULLETS_PER_ROLE = 2
-MAX_SECTION_BULLETS = 5
-MAX_BULLET_CHARS = 185
+MAX_BULLETS_PER_ROLE = 0       # all bullets go under subheadings — none at role level
+MAX_SECTION_BULLETS = 3        # exactly 3 bullets per subheading
+MAX_BULLET_CHARS = 145         # ~130 char target; 145 hard cap
 
 MAX_PROJECTS = 0
 MAX_PROJECT_BULLETS = 3
-MAX_PROJECT_BULLET_CHARS = 170
-MAX_ACTIVITIES = 4
+MAX_PROJECT_BULLET_CHARS = 145
+MAX_ACTIVITIES = 2             # keep activities tight for 1-page fit
 
 ACTION_VERBS = {
     "built", "developed", "designed", "engineered", "implemented", "created", "optimized",
@@ -33,7 +33,7 @@ def optimize_resume(resume: TailoredResume, profile: ProfileOverrides | None = N
     _apply_profile(resume, profile)
 
     resume.target_title = _limit_text(_squash_whitespace(resume.target_title), 120)
-    resume.summary = _limit_text(_squash_whitespace(resume.summary), 420)
+    resume.summary = _limit_text(_squash_whitespace(resume.summary), 300)
     resume.skills = _dedupe([_squash_whitespace(s) for s in resume.skills], limit=MAX_SKILLS)
     # Strip NCC / National Cadet Corps — not a professional certification
     _NCC_FILTER = re.compile(r"national cadet corps|\bncc\b", re.IGNORECASE)
@@ -47,10 +47,8 @@ def optimize_resume(resume: TailoredResume, profile: ProfileOverrides | None = N
         a.name = _limit_text(_squash_whitespace(a.name), 80)
         a.dates = _limit_text(_squash_whitespace(a.dates), 30)
 
-    # Optional flexible sections
-    resume.achievements = _dedupe(
-        [_limit_text(_squash_whitespace(s), 200) for s in resume.achievements if s.strip()], limit=8
-    )
+    # Always clear achievements — not rendered, frees page space
+    resume.achievements = []
     resume.languages = _dedupe(
         [_limit_text(_squash_whitespace(s), 60) for s in resume.languages if s.strip()], limit=10
     )
@@ -71,7 +69,7 @@ def optimize_resume(resume: TailoredResume, profile: ProfileOverrides | None = N
         item.bullets = _trim_bullets(
             item.bullets, max_bullets=MAX_BULLETS_PER_ROLE, max_chars=MAX_BULLET_CHARS
         )
-        item.sections = [s for s in item.sections if s.name or s.bullets][:3]
+        item.sections = [s for s in item.sections if s.name or s.bullets][:2]
         for section in item.sections:
             section.name = _limit_text(_squash_whitespace(section.name), 70)
             section.bullets = _trim_bullets(
