@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: resumeforge-ai
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    plan: free
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false          # set this manually in Render dashboard
+      - key: ANTHROPIC_MODEL
+        value: claude-opus-4-6
+      - key: REQUEST_TIMEOUT_SECONDS
+        value: "120"
+      - key: PORT
+        value: "5000"

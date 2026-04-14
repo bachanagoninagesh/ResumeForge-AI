@@ -65,13 +65,11 @@ def process():
       resume     — file upload (PDF / DOCX / DOC / TXT)
       job_links  — newline-separated list of job URLs
       email      — optional recipient email address
-      api_key    — optional Claude API key (overrides .env)
     Returns {"job_id": "...", "total": N}
     """
     resume_file = request.files.get("resume")
     job_links_raw = request.form.get("job_links", "").strip()
     email = request.form.get("email", "").strip()
-    api_key = request.form.get("api_key", "").strip()
 
     # ── Validation ─────────────────────────────────────────────────────────────
     errors: list[str] = []
@@ -88,10 +86,6 @@ def process():
 
     if errors:
         return jsonify({"error": "\n".join(errors)}), 400
-
-    # ── Apply API key if provided ───────────────────────────────────────────────
-    if api_key:
-        os.environ["ANTHROPIC_API_KEY"] = api_key
 
     # ── Create job workspace ────────────────────────────────────────────────────
     job_id = str(uuid.uuid4())
@@ -390,4 +384,5 @@ if __name__ == "__main__":
     print("  Open:  http://localhost:5000")
     print("=" * 60)
     print()
-    app.run(debug=False, host="0.0.0.0", port=5000, threaded=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=False, host="0.0.0.0", port=port, threaded=True)

@@ -430,14 +430,6 @@
     }
     .input-group .helper { font-size: .76rem; color: var(--text-muted); margin-top: .3rem; }
     .input-group .helper a { color: var(--primary); }
-    .api-key-row { display: flex; gap: .5rem; }
-    .api-key-row input { flex: 1; }
-    .btn-toggle-key {
-      padding: .68rem .85rem; border: 1px solid var(--border); border-radius: var(--radius-sm);
-      background: var(--bg); cursor: pointer; font-size: .9rem;
-      transition: background .15s;
-    }
-    .btn-toggle-key:hover { background: var(--border); }
 
     /* Submit button */
     .submit-area { padding: 0 2.5rem 2rem; text-align: center; }
@@ -825,20 +817,6 @@
               </div>
             </div>
 
-            <div class="input-group" id="api-key-group">
-              <label for="api-key-input">🔑 Claude API Key</label>
-              <div class="api-key-row">
-                <input type="password" id="api-key-input" name="api_key"
-                       placeholder="sk-ant-…" autocomplete="off" />
-                <button type="button" class="btn-toggle-key" id="btn-toggle-key"
-                        title="Show / hide key">👁</button>
-              </div>
-              <div class="helper">
-                Only needed if not already set in <code>.env</code>.
-                Get yours at <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>.
-                <strong id="api-key-status"></strong>
-              </div>
-            </div>
           </div>
         </div><!-- /form-body -->
 
@@ -983,16 +961,6 @@
     // Add default 3 link rows
     addLinkRow(); addLinkRow(); addLinkRow();
 
-    // Check if API key is already configured server-side
-    fetch('/api/config')
-      .then(r => r.json())
-      .then(d => {
-        if (d.has_api_key) {
-          document.getElementById('api-key-status').textContent = ' ✅ Key already configured in .env';
-          document.getElementById('api-key-input').placeholder = '(already set — leave blank to use .env key)';
-        }
-      }).catch(() => {});
-
     // Paste modal close on overlay click
     document.getElementById('paste-modal').addEventListener('click', e => {
       if (e.target === document.getElementById('paste-modal')) closePasteModal();
@@ -1098,12 +1066,6 @@
     chosen.classList.add('visible');
   }
 
-  // ── API key toggle ─────────────────────────────────────────────────────────
-  document.getElementById('btn-toggle-key').addEventListener('click', () => {
-    const inp = document.getElementById('api-key-input');
-    inp.type = inp.type === 'password' ? 'text' : 'password';
-  });
-
   // ── Form submit ────────────────────────────────────────────────────────────
   document.getElementById('main-form').addEventListener('submit', async e => {
     e.preventDefault();
@@ -1125,7 +1087,6 @@
     fd.append('resume', form.resume.files[0]);
     fd.append('job_links', links.join('\n'));
     fd.append('email', document.getElementById('email-input').value.trim());
-    fd.append('api_key', document.getElementById('api-key-input').value.trim());
 
     // UI: loading state
     const btn = document.getElementById('btn-submit');
