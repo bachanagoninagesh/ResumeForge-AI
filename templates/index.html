@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResumeForge AI — Tailored Resumes That Get You Hired</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Reset & Base ────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --hero-from:   #080d1f;
+      --hero-to:     #0f2460;
+      --primary:     #4f8ef7;
+      --primary-dk:  #2a66d9;
+      --accent:      #7c3aed;
+      --cta:         #ff6b35;
+      --cta-hover:   #e85a27;
+      --success:     #06d6a0;
+      --warning:     #ffbe0b;
+      --danger:      #ef4444;
+      --bg:          #f0f4ff;
+      --card:        #ffffff;
+      --text:        #0f172a;
+      --text-muted:  #64748b;
+      --border:      #e2e8f0;
+      --shadow-sm:   0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+      --shadow-md:   0 4px 16px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.06);
+      --shadow-lg:   0 20px 50px rgba(0,0,0,.15), 0 8px 20px rgba(0,0,0,.08);
+      --radius:      14px;
+      --radius-sm:   8px;
+      --radius-lg:   20px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Nav ─────────────────────────────────────────────────────────────── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem;
+      height: 64px;
+      background: rgba(8, 13, 31, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .nav-brand {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.35rem; font-weight: 700;
+      color: #fff;
+      display: flex; align-items: center; gap: .55rem;
+      text-decoration: none;
+    }
+    .nav-brand .logo-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .95rem;
+    }
+    .nav-brand .ai-badge {
+      font-size: .65rem; font-weight: 600;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      padding: 2px 6px;
+      border: 1px solid rgba(79,142,247,.35);
+      border-radius: 4px;
+      vertical-align: super;
+    }
+    .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+    .nav-links a {
+      color: rgba(255,255,255,.7); text-decoration: none;
+      font-size: .9rem; font-weight: 500; transition: color .2s;
+    }
+    .nav-links a:hover { color: #fff; }
+    .nav-cta {
+      background: var(--cta); color: #fff !important;
+      padding: .4rem 1.1rem; border-radius: 8px; font-weight: 600 !important;
+      transition: background .2s, transform .15s !important;
+    }
+    .nav-cta:hover { background: var(--cta-hover) !important; transform: translateY(-1px); }
+
+    /* ── Hero ─────────────────────────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      background: linear-gradient(160deg, var(--hero-from) 0%, var(--hero-to) 100%);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 7rem 1.5rem 4rem;
+      position: relative; overflow: hidden;
+    }
+    /* Animated glowing orbs */
+    .hero::before, .hero::after {
+      content: '';
+      position: absolute; border-radius: 50%;
+      filter: blur(80px); opacity: .25; animation: float 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .hero::before {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, var(--primary), transparent);
+      top: -120px; left: -120px;
+    }
+    .hero::after {
+      width: 450px; height: 450px;
+      background: radial-gradient(circle, var(--accent), transparent);
+      bottom: -100px; right: -100px;
+      animation-delay: -4s;
+    }
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50%       { transform: translate(30px, 20px) scale(1.08); }
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .45rem;
+      background: rgba(79,142,247,.12);
+      border: 1px solid rgba(79,142,247,.3);
+      color: var(--primary);
+      padding: .4rem 1rem; border-radius: 999px;
+      font-size: .82rem; font-weight: 600;
+      margin-bottom: 1.5rem;
+      animation: fadeUp .6s ease both;
+    }
+    .hero-badge .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--primary);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .5; transform: scale(.7); }
+    }
+
+    .hero h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2.8rem, 7vw, 5.2rem);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 1.2rem;
+      animation: fadeUp .7s ease .1s both;
+    }
+    .hero h1 .grad {
+      background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .hero-sub {
+      max-width: 600px;
+      font-size: clamp(1rem, 2.2vw, 1.2rem);
+      color: rgba(255,255,255,.7);
+      margin-bottom: 2.4rem;
+      line-height: 1.65;
+      animation: fadeUp .7s ease .2s both;
+    }
+
+    .hero-stats {
+      display: flex; flex-wrap: wrap; gap: 1rem 2rem;
+      justify-content: center;
+      margin-bottom: 3rem;
+      animation: fadeUp .7s ease .3s both;
+    }
+    .hero-stat {
+      display: flex; align-items: center; gap: .5rem;
+      color: rgba(255,255,255,.65); font-size: .88rem; font-weight: 500;
+    }
+    .hero-stat .icon { font-size: 1.1rem; }
+
+    .hero-cta {
+      display: inline-flex; align-items: center; gap: .6rem;
+      background: var(--cta);
+      color: #fff; font-size: 1.1rem; font-weight: 700;
+      padding: .95rem 2.2rem; border-radius: 12px;
+      text-decoration: none;
+      box-shadow: 0 8px 30px rgba(255,107,53,.4);
+      transition: background .2s, transform .15s, box-shadow .2s;
+      animation: fadeUp .7s ease .4s both;
+    }
+    .hero-cta:hover {
+      background: var(--cta-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 36px rgba(255,107,53,.5);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── How it works ──────────────────────────────────────────────────────── */
+    .how-section {
+      background: var(--bg); padding: 5rem 1.5rem;
+      text-align: center;
+    }
+    .section-label {
+      font-size: .78rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--primary); margin-bottom: .6rem;
+    }
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1.7rem, 4vw, 2.5rem); font-weight: 700;
+      color: var(--text); margin-bottom: .8rem;
+    }
+    .section-sub { color: var(--text-muted); font-size: 1rem; max-width: 520px; margin: 0 auto 3rem; }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem; max-width: 900px; margin: 0 auto;
+    }
+    .step-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 2rem 1.5rem;
+      box-shadow: var(--shadow-sm);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .step-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+    .step-num {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff; font-weight: 700; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+    }
+    .step-icon { font-size: 2rem; margin-bottom: .75rem; }
+    .step-card h3 { font-weight: 700; margin-bottom: .4rem; font-size: 1rem; }
+    .step-card p { color: var(--text-muted); font-size: .88rem; }
+
+    /* ── Main Form Section ─────────────────────────────────────────────────── */
+    .form-section {
+      background: linear-gradient(180deg, var(--bg) 0%, #e8eeff 100%);
+      padding: 4rem 1.5rem 5rem;
+    }
+    .form-container {
+      max-width: 820px; margin: 0 auto;
+    }
+    .form-card {
+      background: var(--card); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+
+    .form-header {
+      background: linear-gradient(135deg, var(--hero-from), var(--hero-to));
+      padding: 2rem 2.5rem;
+      color: #fff;
+    }
+    .form-header h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.6rem; font-weight: 700; margin-bottom: .3rem;
+    }
+    .form-header p { color: rgba(255,255,255,.7); font-size: .93rem; }
+
+    .form-body { padding: 2rem 2.5rem; }
+
+    /* Form blocks */
+    .form-block {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .form-block:last-child { border-bottom: none; margin-bottom: 0; }
+
+    .block-header {
+      display: flex; align-items: center; gap: .7rem;
+      margin-bottom: 1.2rem;
+    }
+    .block-icon {
+      width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .block-icon.blue  { background: rgba(79,142,247,.12); }
+    .block-icon.purple{ background: rgba(124,58,237,.12); }
+    .block-icon.orange{ background: rgba(255,107,53,.12); }
+    .block-icon.teal  { background: rgba(6,214,160,.12); }
+    .block-label { font-weight: 700; font-size: 1rem; }
+    .block-hint  { font-size: .8rem; color: var(--text-muted); margin-left: auto; }
+
+    /* Drag-drop zone */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      position: relative;
+    }
+    .drop-zone.drag-over {
+      border-color: var(--primary);
+      background: rgba(79,142,247,.04);
+    }
+    .drop-zone.has-file {
+      border-color: var(--success);
+      background: rgba(6,214,160,.04);
+    }
+    .drop-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .drop-icon { font-size: 2.5rem; margin-bottom: .75rem; }
+    .drop-title { font-weight: 600; font-size: 1rem; margin-bottom: .3rem; }
+    .drop-sub { color: var(--text-muted); font-size: .83rem; }
+    .drop-formats {
+      display: flex; flex-wrap: wrap; gap: .4rem;
+      justify-content: center; margin-top: .9rem;
+    }
+    .format-badge {
+      background: var(--bg); border: 1px solid var(--border);
+      color: var(--text-muted); font-size: .72rem; font-weight: 600;
+      padding: .2rem .5rem; border-radius: 4px;
+    }
+    .file-chosen {
+      display: none; align-items: center; gap: .6rem;
+      background: rgba(6,214,160,.08); border: 1px solid rgba(6,214,160,.3);
+      border-radius: 8px; padding: .65rem 1rem; margin-top: 1rem;
+      font-size: .88rem; font-weight: 500; color: #047857;
+    }
+    .file-chosen.visible { display: flex; }
+
+    /* Job links */
+    .links-list { display: flex; flex-direction: column; gap: .55rem; }
+    .link-row {
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .link-row input {
+      flex: 1; padding: .65rem .9rem;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-size: .9rem; font-family: inherit;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+      background: #fff;
+    }
+    .link-row input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79,142,247,.12);
+    }
+    .link-row input::placeholder { color: #94a3b8; }
+    .btn-remove-link {
+      width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--text-muted); cursor: pointer; font-size: 1.1rem; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .btn-remove-link:hover { background: #fee2e2; border-color: #fca5a5; color: var(--danger); }
+
+    .links-actions {
+      display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .9rem;
+    }
+    .btn-add-link, .btn-paste-links {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .55rem 1rem; border-radius: 8px; font-size: .85rem; font-weight: 600;
+      cursor: pointer; transition: background .15s, transform .1s; border: none;
+    }
+    .btn-add-link {
+      background: rgba(79,142,247,.1); color: var(--primary-dk);
+    }
+    .btn-add-link:hover { background: rgba(79,142,247,.18); transform: translateY(-1px); }
+    .btn-paste-links {
+      background: rgba(124,58,237,.1); color: var(--accent);
+    }
+    .btn-paste-links:hover { background: rgba(124,58,237,.18); transform: translateY(-1px); }
+
+    .link-count {
+      font-size: .8rem; color: var(--text-muted); font-weight: 500;
+      margin-top: .5rem;
+    }
+    .link-count span { color: var(--primary); font-weight: 700; }
+
+    /* Paste modal */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,.5); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--card); border-radius: var(--radius-lg);
+      padding: 2rem; max-width: 560px; width: 100%;
+      box-shadow: var(--shadow-lg);
+      animation: popIn .25s ease both;
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(.95) translateY(10px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal h3 { font-weight: 700; margin-bottom: .4rem; }
+    .modal p  { color: var(--text-muted); font-size: .88rem; margin-bottom: 1rem; }
+    .modal textarea {
+      width: 100%; height: 180px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: .75rem; font-size: .88rem; font-family: monospace;
+      resize: vertical; outline: none;
+      transition: border-color .2s;
+    }
+    .modal textarea:focus { border-color: var(--primary); }
+    .modal-actions { display: flex; gap: .75rem; margin-top: 1rem; justify-content: flex-end; }
+
+    /* Settings inputs */
+    .input-group { margin-bottom: 1.1rem; }
+    .input-group:last-child { margin-bottom: 0; }
+    .input-group label {
+      display: block; font-size: .85rem; font-weight: 600; margin-bottom: .4rem; color: var(--text);
+    }
+    .input-group input {
+      width: 100%; padding: .68rem .9rem;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-size: .9rem; font-family: inherit; outline: none;
+      transition: border-color .2s, box-shadow .2s; background: #fff;
+    }
+    .input-group input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79,142,247,.12);
+    }
+    .input-group .helper { font-size: .76rem; color: var(--text-muted); margin-top: .3rem; }
+    .input-group .helper a { color: var(--primary); }
+    .api-key-row { display: flex; gap: .5rem; }
+    .api-key-row input { flex: 1; }
+    .btn-toggle-key {
+      padding: .68rem .85rem; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      background: var(--bg); cursor: pointer; font-size: .9rem;
+      transition: background .15s;
+    }
+    .btn-toggle-key:hover { background: var(--border); }
+
+    /* Submit button */
+    .submit-area { padding: 0 2.5rem 2rem; text-align: center; }
+    .btn-submit {
+      display: inline-flex; align-items: center; justify-content: center; gap: .7rem;
+      width: 100%; max-width: 500px;
+      background: linear-gradient(135deg, var(--cta) 0%, #e8422a 100%);
+      color: #fff; font-size: 1.15rem; font-weight: 700;
+      padding: 1.1rem 2rem; border-radius: 14px; border: none; cursor: pointer;
+      box-shadow: 0 8px 30px rgba(255,107,53,.35);
+      transition: transform .15s, box-shadow .2s, filter .2s;
+      font-family: inherit;
+    }
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(255,107,53,.45);
+    }
+    .btn-submit:disabled { filter: grayscale(.5); opacity: .7; cursor: not-allowed; }
+    .btn-submit .spinner {
+      display: none; width: 20px; height: 20px;
+      border: 3px solid rgba(255,255,255,.35);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    .btn-submit.loading .spinner { display: block; }
+    .btn-submit.loading .btn-text  { opacity: .7; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Progress / Results Section ────────────────────────────────────────── */
+    .progress-section {
+      background: var(--bg); padding: 4rem 1.5rem;
+      display: none;
+    }
+    .progress-section.visible { display: block; }
+    .progress-container { max-width: 820px; margin: 0 auto; }
+
+    .progress-header {
+      text-align: center; margin-bottom: 2.5rem;
+    }
+    .progress-header h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; }
+    .status-msg { color: var(--text-muted); font-size: .95rem; margin-top: .4rem; min-height: 1.4em; }
+
+    /* Overall bar */
+    .overall-bar-wrap {
+      background: var(--card); border-radius: var(--radius); padding: 1.5rem;
+      box-shadow: var(--shadow-sm); margin-bottom: 2rem;
+    }
+    .bar-label {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: .88rem; font-weight: 600; margin-bottom: .75rem;
+    }
+    .bar-pct { color: var(--primary); }
+    .progress-bar-bg {
+      height: 10px; background: var(--border); border-radius: 999px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; border-radius: 999px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width .5s ease;
+      width: 0%;
+    }
+
+    /* Job result cards */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .result-card {
+      background: var(--card); border-radius: var(--radius);
+      border: 1px solid var(--border); padding: 1.25rem 1.4rem;
+      box-shadow: var(--shadow-sm);
+      animation: slideIn .4s ease both;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .result-card.success { border-left: 4px solid var(--success); }
+    .result-card.failed  { border-left: 4px solid var(--danger); }
+    .result-card.loading-card { border-left: 4px solid var(--primary); }
+
+    .rc-top {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem;
+      margin-bottom: .75rem;
+    }
+    .rc-company {
+      font-size: .78rem; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+    .rc-title { font-weight: 700; font-size: 1rem; margin-top: .15rem; }
+    .rc-status-icon { font-size: 1.3rem; flex-shrink: 0; }
+
+    .rc-scores {
+      display: flex; gap: 1rem; margin-bottom: .9rem;
+    }
+    .rc-score {
+      background: var(--bg); border-radius: 8px; padding: .4rem .8rem;
+      font-size: .8rem; font-weight: 600; text-align: center;
+    }
+    .rc-score .label { color: var(--text-muted); font-size: .72rem; font-weight: 500; }
+    .score-before { color: var(--text-muted); }
+    .score-after  { color: var(--success); }
+    .score-arrow  { color: var(--text-muted); font-size: .85rem; align-self: center; }
+
+    .rc-msg { font-size: .83rem; color: var(--text-muted); margin-bottom: .9rem; }
+
+    .btn-download {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dk));
+      color: #fff; font-size: .85rem; font-weight: 600;
+      padding: .5rem 1.1rem; border-radius: 8px;
+      text-decoration: none;
+      transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 3px 12px rgba(79,142,247,.3);
+    }
+    .btn-download:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(79,142,247,.4); }
+
+    .rc-spinner {
+      width: 18px; height: 18px;
+      border: 2.5px solid var(--border); border-top-color: var(--primary);
+      border-radius: 50%; animation: spin 1s linear infinite;
+      display: inline-block; margin-right: .4rem;
+    }
+
+    /* Complete banner */
+    .complete-banner {
+      background: linear-gradient(135deg, #064e3b, #065f46);
+      border-radius: var(--radius); padding: 2rem;
+      text-align: center; color: #fff;
+      margin-top: 2rem; display: none;
+    }
+    .complete-banner.visible { display: block; animation: slideIn .4s ease; }
+    .complete-banner .big-check { font-size: 3rem; margin-bottom: .5rem; }
+    .complete-banner h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; }
+    .complete-banner p { color: rgba(255,255,255,.75); margin-top: .4rem; }
+    .btn-start-over {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: rgba(255,255,255,.15); color: #fff;
+      border: 1px solid rgba(255,255,255,.3);
+      padding: .6rem 1.4rem; border-radius: 9px; cursor: pointer;
+      font-size: .9rem; font-weight: 600; margin-top: 1.2rem;
+      transition: background .2s;
+      font-family: inherit;
+    }
+    .btn-start-over:hover { background: rgba(255,255,255,.25); }
+
+    /* Error banner */
+    .error-banner {
+      background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius);
+      padding: 1.25rem 1.5rem; color: #991b1b; font-size: .9rem;
+      margin-top: 1rem; display: none;
+    }
+    .error-banner.visible { display: block; }
+    .error-banner strong { font-weight: 700; }
+
+    /* ── Features ──────────────────────────────────────────────────────────── */
+    .features-section {
+      background: linear-gradient(160deg, var(--hero-from) 0%, #0d1b4b 100%);
+      padding: 5rem 1.5rem;
+      text-align: center;
+    }
+    .features-section .section-label { color: rgba(255,255,255,.5); }
+    .features-section .section-title { color: #fff; }
+    .features-section .section-sub { color: rgba(255,255,255,.55); }
+
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem; max-width: 900px; margin: 0 auto;
+    }
+    .feat-card {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: var(--radius); padding: 1.8rem 1.4rem;
+      text-align: center; color: #fff;
+      transition: background .2s, transform .2s;
+    }
+    .feat-card:hover { background: rgba(255,255,255,.1); transform: translateY(-3px); }
+    .feat-icon { font-size: 2.2rem; margin-bottom: .9rem; }
+    .feat-card h4 { font-weight: 700; margin-bottom: .4rem; font-size: .97rem; }
+    .feat-card p { color: rgba(255,255,255,.55); font-size: .83rem; line-height: 1.5; }
+
+    /* ── Footer ────────────────────────────────────────────────────────────── */
+    footer {
+      background: var(--hero-from); color: rgba(255,255,255,.45);
+      text-align: center; padding: 2rem 1.5rem;
+      font-size: .82rem;
+    }
+    footer a { color: var(--primary); text-decoration: none; }
+
+    /* ── Generic buttons ───────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .55rem 1.2rem; border-radius: 8px; cursor: pointer;
+      font-size: .88rem; font-weight: 600; border: none; font-family: inherit;
+      transition: background .15s, transform .1s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dk); }
+    .btn-ghost {
+      background: transparent; color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { background: var(--border); }
+
+    /* ── Responsive ────────────────────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .form-body, .submit-area { padding-left: 1.2rem; padding-right: 1.2rem; }
+      .form-header { padding: 1.5rem 1.2rem; }
+      .nav-links { display: none; }
+      .results-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ Navigation ════════════════════════════════════════════════════════════ -->
+<nav class="nav">
+  <a class="nav-brand" href="#">
+    <div class="logo-icon">⚡</div>
+    ResumeForge <span class="ai-badge">AI</span>
+  </a>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#form-section">Get Started</a>
+    <a href="#form-section" class="nav-cta">Generate Resumes</a>
+  </div>
+</nav>
+
+<!-- ══ Hero ══════════════════════════════════════════════════════════════════ -->
+<section class="hero" id="home">
+  <div class="hero-badge">
+    <span class="dot"></span> Powered by Claude AI &nbsp;·&nbsp; ATS-Optimized
+  </div>
+
+  <h1>
+    Your Resume,<br/>
+    <span class="grad">Perfectly Tailored</span><br/>
+    For Every Job
+  </h1>
+
+  <p class="hero-sub">
+    Upload your resume, drop up to 15 job links, and get
+    beautifully crafted one-page PDFs — individually tailored for
+    each role and sent straight to your inbox.
+  </p>
+
+  <div class="hero-stats">
+    <div class="hero-stat"><span class="icon">📋</span> Upload any format (PDF, DOCX, DOC)</div>
+    <div class="hero-stat"><span class="icon">🔗</span> Up to 15 job links at once</div>
+    <div class="hero-stat"><span class="icon">📄</span> One-page ATS-friendly PDF</div>
+    <div class="hero-stat"><span class="icon">📧</span> Email delivery included</div>
+    <div class="hero-stat"><span class="icon">🎯</span> Keyword match score shown</div>
+    <div class="hero-stat"><span class="icon">🔒</span> Your data stays local</div>
+  </div>
+
+  <a class="hero-cta" href="#form-section">
+    🚀 Start Tailoring Now
+  </a>
+</section>
+
+<!-- ══ How it works ══════════════════════════════════════════════════════════ -->
+<section class="how-section" id="how">
+  <div class="section-label">Simple Process</div>
+  <h2 class="section-title">Three steps to your dream job</h2>
+  <p class="section-sub">No complicated setup. No manual editing. Just results.</p>
+
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-icon">📤</div>
+      <h3>Upload Your Resume</h3>
+      <p>Drop your existing resume in any format — PDF, Word, or plain text. We'll read every section.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-icon">🔗</div>
+      <h3>Add Job Links</h3>
+      <p>Paste up to 15 job posting URLs. We scrape the full description and extract key requirements.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-icon">🤖</div>
+      <h3>AI Tailors Each Resume</h3>
+      <p>Claude AI rewrites your resume for every job — mirroring keywords, aligning title, maximising ATS score.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <div class="step-icon">📥</div>
+      <h3>Download or Receive by Email</h3>
+      <p>One crisp, one-page PDF per job, using your real credentials. Download instantly or get them by email.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ Main Form ══════════════════════════════════════════════════════════════ -->
+<section class="form-section" id="form-section">
+  <div class="form-container">
+    <div class="section-label" style="text-align:center; margin-bottom:.5rem;">Get Started</div>
+    <h2 class="section-title" style="text-align:center; margin-bottom:.4rem;">Build your tailored resumes</h2>
+    <p class="section-sub" style="text-align:center; margin-bottom:2rem;">
+      Fill in the form below — takes about 30 seconds per job link.
+    </p>
+
+    <div class="form-card">
+      <!-- Card header -->
+      <div class="form-header">
+        <h2>⚡ ResumeForge AI Generator</h2>
+        <p>Upload → Add job links → Enter email → Hit Generate. That's it.</p>
+      </div>
+
+      <form id="main-form" enctype="multipart/form-data">
+
+        <!-- ── Block 1: Resume Upload ──────────────────────────────────────── -->
+        <div class="form-body">
+          <div class="form-block">
+            <div class="block-header">
+              <div class="block-icon blue">📄</div>
+              <span class="block-label">Step 1 — Upload Your Resume</span>
+              <span class="block-hint">PDF, DOCX, DOC, or TXT</span>
+            </div>
+
+            <div class="drop-zone" id="drop-zone">
+              <input type="file" name="resume" id="resume-input"
+                     accept=".pdf,.docx,.doc,.txt,.rtf,.md" required />
+              <div class="drop-icon">📂</div>
+              <div class="drop-title">Drag &amp; drop your resume here</div>
+              <div class="drop-sub">or click to browse your files</div>
+              <div class="drop-formats">
+                <span class="format-badge">PDF</span>
+                <span class="format-badge">DOCX</span>
+                <span class="format-badge">DOC</span>
+                <span class="format-badge">TXT</span>
+                <span class="format-badge">RTF</span>
+              </div>
+            </div>
+
+            <div class="file-chosen" id="file-chosen">
+              <span>✅</span>
+              <span id="file-name-display">resume.pdf</span>
+              <span style="color:var(--text-muted);font-size:.78rem;" id="file-size-display"></span>
+            </div>
+          </div>
+
+          <!-- ── Block 2: Job Links ──────────────────────────────────────────── -->
+          <div class="form-block">
+            <div class="block-header">
+              <div class="block-icon purple">🔗</div>
+              <span class="block-label">Step 2 — Job Links</span>
+              <span class="block-hint">Min 1 · Max 15</span>
+            </div>
+
+            <div class="links-list" id="links-list">
+              <!-- Rows injected by JS -->
+            </div>
+
+            <div class="links-actions">
+              <button type="button" class="btn-add-link" id="btn-add-link">
+                ＋ Add another link
+              </button>
+              <button type="button" class="btn-paste-links" id="btn-paste-links">
+                📋 Paste multiple links
+              </button>
+            </div>
+            <div class="link-count" id="link-count">
+              <span id="link-count-num">1</span> link(s) added
+            </div>
+          </div>
+
+          <!-- ── Block 3: Settings ───────────────────────────────────────────── -->
+          <div class="form-block">
+            <div class="block-header">
+              <div class="block-icon orange">⚙️</div>
+              <span class="block-label">Step 3 — Your Details</span>
+            </div>
+
+            <div class="input-group">
+              <label for="email-input">📧 Email address (to receive your PDFs)</label>
+              <input type="email" id="email-input" name="email"
+                     placeholder="you@example.com" />
+              <div class="helper">
+                Optional — leave blank if you want to download directly.
+                Requires SMTP to be configured in your <code>.env</code> file.
+              </div>
+            </div>
+
+            <div class="input-group" id="api-key-group">
+              <label for="api-key-input">🔑 Claude API Key</label>
+              <div class="api-key-row">
+                <input type="password" id="api-key-input" name="api_key"
+                       placeholder="sk-ant-…" autocomplete="off" />
+                <button type="button" class="btn-toggle-key" id="btn-toggle-key"
+                        title="Show / hide key">👁</button>
+              </div>
+              <div class="helper">
+                Only needed if not already set in <code>.env</code>.
+                Get yours at <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>.
+                <strong id="api-key-status"></strong>
+              </div>
+            </div>
+          </div>
+        </div><!-- /form-body -->
+
+        <!-- Submit -->
+        <div class="submit-area">
+          <button type="submit" class="btn-submit" id="btn-submit">
+            <span class="spinner"></span>
+            <span class="btn-text">🚀 Generate My Tailored Resumes</span>
+          </button>
+          <p style="margin-top:.7rem; font-size:.8rem; color:var(--text-muted);">
+            Takes ~30–90 seconds per job link depending on the site.
+          </p>
+        </div>
+
+      </form>
+    </div><!-- /form-card -->
+  </div><!-- /form-container -->
+</section>
+
+<!-- ══ Progress / Results ════════════════════════════════════════════════════ -->
+<section class="progress-section" id="progress-section">
+  <div class="progress-container">
+
+    <div class="progress-header">
+      <h2 id="progress-title">Generating your resumes…</h2>
+      <p class="status-msg" id="status-msg">Starting up…</p>
+    </div>
+
+    <div class="overall-bar-wrap">
+      <div class="bar-label">
+        <span id="bar-label-text">Processing…</span>
+        <span class="bar-pct" id="bar-pct">0%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-bar"></div>
+      </div>
+    </div>
+
+    <div class="results-grid" id="results-grid"></div>
+
+    <div class="error-banner" id="error-banner">
+      <strong>Error:</strong> <span id="error-msg"></span>
+    </div>
+
+    <div class="complete-banner" id="complete-banner">
+      <div class="big-check">🎉</div>
+      <h3 id="complete-title">All resumes ready!</h3>
+      <p id="complete-sub">Download them above or check your email.</p>
+      <button class="btn-start-over" onclick="startOver()">
+        ↩ Generate for more jobs
+      </button>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ Features ══════════════════════════════════════════════════════════════ -->
+<section class="features-section" id="features">
+  <div class="section-label">Why ResumeForge AI</div>
+  <h2 class="section-title">Everything you need to land interviews</h2>
+  <p class="section-sub" style="color:rgba(255,255,255,.55);">
+    Built with the same ATS best practices that professional recruiters use.
+  </p>
+  <div class="features-grid">
+    <div class="feat-card">
+      <div class="feat-icon">🎯</div>
+      <h4>ATS Keyword Matching</h4>
+      <p>Mirror exact phrases from job descriptions so your resume passes automated screening.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📄</div>
+      <h4>Crisp One-Page PDF</h4>
+      <p>Every resume auto-fits to a single page — clean, professional, and ready to send.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🤖</div>
+      <h4>Claude AI Powered</h4>
+      <p>Industry-leading AI rewrites your bullets and summary to match each role — factually, never fabricated.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📊</div>
+      <h4>Before/After Score</h4>
+      <p>See exactly how much your ATS match improved from original to tailored version.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📧</div>
+      <h4>Email Delivery</h4>
+      <p>All PDFs delivered straight to your inbox — no fussing with downloads when you're on the go.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🧩</div>
+      <h4>Flexible Sections</h4>
+      <p>Achievements, languages, publications — AI includes only the sections relevant to each role.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">⚡</div>
+      <h4>Batch Processing</h4>
+      <p>Process up to 15 jobs at once — apply to many roles without touching a single document.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔒</div>
+      <h4>100% Local &amp; Private</h4>
+      <p>All processing runs on your own machine. Your resume never leaves your computer.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ Footer ═════════════════════════════════════════════════════════════════ -->
+<footer>
+  <p>
+    <strong style="color:rgba(255,255,255,.7)">ResumeForge AI</strong> — Built on
+    <a href="https://www.anthropic.com/" target="_blank" rel="noopener">Claude by Anthropic</a>
+    &nbsp;·&nbsp; Runs 100% on your machine &nbsp;·&nbsp; Your data stays with you.
+  </p>
+</footer>
+
+<!-- ══ Paste Modal ════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="paste-modal">
+  <div class="modal">
+    <h3>📋 Paste Multiple Job Links</h3>
+    <p>Paste one URL per line (or separated by commas/spaces). We'll parse them automatically.</p>
+    <textarea id="paste-area" placeholder="https://jobs.example.com/12345&#10;https://careers.company.com/role/67890&#10;..."></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closePasteModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="importPastedLinks()">Import Links</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ JavaScript ════════════════════════════════════════════════════════════ -->
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  let linkCount = 0;
+  let jobId = null;
+  let totalJobs = 0;
+  let completedJobs = 0;
+  let eventSource = null;
+
+  // ── Initialise ─────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    // Add default 3 link rows
+    addLinkRow(); addLinkRow(); addLinkRow();
+
+    // Check if API key is already configured server-side
+    fetch('/api/config')
+      .then(r => r.json())
+      .then(d => {
+        if (d.has_api_key) {
+          document.getElementById('api-key-status').textContent = ' ✅ Key already configured in .env';
+          document.getElementById('api-key-input').placeholder = '(already set — leave blank to use .env key)';
+        }
+      }).catch(() => {});
+
+    // Paste modal close on overlay click
+    document.getElementById('paste-modal').addEventListener('click', e => {
+      if (e.target === document.getElementById('paste-modal')) closePasteModal();
+    });
+  });
+
+  // ── Link rows ──────────────────────────────────────────────────────────────
+  function addLinkRow(value = '') {
+    if (linkCount >= 15) return;
+    linkCount++;
+    const list = document.getElementById('links-list');
+    const row = document.createElement('div');
+    row.className = 'link-row';
+    row.dataset.id = linkCount;
+    row.innerHTML = `
+      <input type="url" name="link_${linkCount}" placeholder="https://careers.company.com/job/12345"
+             value="${escHtml(value)}" />
+      <button type="button" class="btn-remove-link" onclick="removeLinkRow(this)" title="Remove">✕</button>
+    `;
+    list.appendChild(row);
+    updateLinkCount();
+    return row;
+  }
+
+  function removeLinkRow(btn) {
+    const row = btn.closest('.link-row');
+    if (document.querySelectorAll('.link-row').length <= 1) return; // keep at least 1
+    row.remove();
+    linkCount = Math.max(0, linkCount - 1);
+    updateLinkCount();
+  }
+
+  function updateLinkCount() {
+    const rows = document.querySelectorAll('.link-row input');
+    const filled = [...rows].filter(i => i.value.trim()).length;
+    document.getElementById('link-count-num').textContent = rows.length;
+    document.getElementById('link-count').innerHTML =
+      `<span>${rows.length}</span> row(s) · <span>${filled}</span> filled`;
+  }
+
+  document.getElementById('btn-add-link').addEventListener('click', () => {
+    if (linkCount >= 15) { alert('Maximum 15 job links.'); return; }
+    const row = addLinkRow();
+    row.querySelector('input').focus();
+  });
+
+  // ── Paste modal ────────────────────────────────────────────────────────────
+  document.getElementById('btn-paste-links').addEventListener('click', () => {
+    document.getElementById('paste-modal').classList.add('open');
+    document.getElementById('paste-area').focus();
+  });
+
+  function closePasteModal() {
+    document.getElementById('paste-modal').classList.remove('open');
+    document.getElementById('paste-area').value = '';
+  }
+
+  function importPastedLinks() {
+    const raw = document.getElementById('paste-area').value;
+    // Split on newlines, commas, or spaces; keep only non-empty strings
+    const links = raw
+      .split(/[\n,\s]+/)
+      .map(s => s.trim())
+      .filter(s => s.startsWith('http'));
+
+    if (!links.length) { alert('No valid URLs found.'); return; }
+
+    // Clear existing rows
+    document.getElementById('links-list').innerHTML = '';
+    linkCount = 0;
+
+    links.slice(0, 15).forEach(l => addLinkRow(l));
+    closePasteModal();
+  }
+
+  // ── File drag & drop ───────────────────────────────────────────────────────
+  const dropZone = document.getElementById('drop-zone');
+  const resumeInput = document.getElementById('resume-input');
+
+  dropZone.addEventListener('dragover', e => {
+    e.preventDefault(); dropZone.classList.add('drag-over');
+  });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) setChosenFile(file);
+  });
+  resumeInput.addEventListener('change', () => {
+    if (resumeInput.files[0]) setChosenFile(resumeInput.files[0]);
+  });
+
+  function setChosenFile(file) {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    resumeInput.files = dt.files;
+
+    dropZone.classList.add('has-file');
+    const chosen = document.getElementById('file-chosen');
+    document.getElementById('file-name-display').textContent = file.name;
+    document.getElementById('file-size-display').textContent =
+      '(' + (file.size / 1024).toFixed(1) + ' KB)';
+    chosen.classList.add('visible');
+  }
+
+  // ── API key toggle ─────────────────────────────────────────────────────────
+  document.getElementById('btn-toggle-key').addEventListener('click', () => {
+    const inp = document.getElementById('api-key-input');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  });
+
+  // ── Form submit ────────────────────────────────────────────────────────────
+  document.getElementById('main-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = e.target;
+
+    // Collect all link inputs into one textarea value
+    const links = [...document.querySelectorAll('.link-row input')]
+      .map(i => i.value.trim())
+      .filter(Boolean);
+
+    if (!links.length) {
+      alert('Please add at least one job link.'); return;
+    }
+    if (!form.resume.files[0]) {
+      alert('Please upload your resume file.'); return;
+    }
+
+    const fd = new FormData();
+    fd.append('resume', form.resume.files[0]);
+    fd.append('job_links', links.join('\n'));
+    fd.append('email', document.getElementById('email-input').value.trim());
+    fd.append('api_key', document.getElementById('api-key-input').value.trim());
+
+    // UI: loading state
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true;
+    btn.classList.add('loading');
+
+    // Show progress section
+    document.getElementById('progress-section').classList.add('visible');
+    document.getElementById('progress-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('results-grid').innerHTML = '';
+    document.getElementById('complete-banner').classList.remove('visible');
+    document.getElementById('error-banner').classList.remove('visible');
+    setBar(0, 'Starting…');
+
+    try {
+      const res = await fetch('/api/process', { method: 'POST', body: fd });
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        showError(data.error || 'Server error'); btn.disabled = false; btn.classList.remove('loading');
+        return;
+      }
+
+      jobId = data.job_id;
+      totalJobs = data.total;
+      completedJobs = 0;
+      listenToProgress(jobId);
+
+    } catch (err) {
+      showError('Network error: ' + err.message);
+      btn.disabled = false; btn.classList.remove('loading');
+    }
+  });
+
+  // ── SSE progress listener ──────────────────────────────────────────────────
+  function listenToProgress(jid) {
+    if (eventSource) eventSource.close();
+    eventSource = new EventSource(`/api/status/${jid}`);
+
+    eventSource.onmessage = e => {
+      const msg = JSON.parse(e.data);
+      handleSSE(msg);
+    };
+    eventSource.onerror = () => {
+      setStatus('Connection lost — please check the server.');
+    };
+  }
+
+  function handleSSE(msg) {
+    switch (msg.type) {
+      case 'ping': return;
+
+      case 'status':
+        setStatus(msg.message); return;
+
+      case 'total':
+        totalJobs = msg.total;
+        setStatus(msg.message);
+        return;
+
+      case 'progress':
+        setStatus(msg.message);
+        const progPct = Math.round(((msg.current - 1) / msg.total) * 100);
+        setBar(progPct, `Job ${msg.current} of ${msg.total}`);
+        // Show a loading card for the current job
+        ensureLoadingCard(msg.current, msg.source);
+        return;
+
+      case 'job_result':
+        completedJobs++;
+        const pct = Math.round((completedJobs / (msg.total || 1)) * 100);
+        setBar(pct, `${completedJobs} of ${msg.total} done`);
+        replaceLoadingCard(msg);
+        return;
+
+      case 'complete':
+        setBar(100, 'All done!');
+        setStatus(msg.message);
+        document.getElementById('complete-title').textContent =
+          `🎉 ${msg.total_generated} resume(s) generated!`;
+        document.getElementById('complete-sub').textContent =
+          msg.total_generated < msg.total_jobs
+            ? `${msg.total_jobs - msg.total_generated} job(s) were skipped (fetch error). Download yours above.`
+            : 'All resumes are ready. Download them above or check your email.';
+        document.getElementById('complete-banner').classList.add('visible');
+        document.getElementById('progress-title').textContent = 'Your resumes are ready!';
+        resetSubmitBtn();
+        if (eventSource) eventSource.close();
+        return;
+
+      case 'error':
+        showError(msg.message);
+        resetSubmitBtn();
+        if (eventSource) eventSource.close();
+        return;
+    }
+  }
+
+  // ── Card helpers ───────────────────────────────────────────────────────────
+  function ensureLoadingCard(idx, source) {
+    const grid = document.getElementById('results-grid');
+    if (document.getElementById(`card-${idx}`)) return;
+    const card = document.createElement('div');
+    card.className = 'result-card loading-card';
+    card.id = `card-${idx}`;
+    card.innerHTML = `
+      <div class="rc-top">
+        <div>
+          <div class="rc-company">Job #${idx}</div>
+          <div class="rc-title"><span class="rc-spinner"></span>Fetching &amp; tailoring…</div>
+        </div>
+        <div class="rc-status-icon">⏳</div>
+      </div>
+      <div class="rc-msg" style="font-size:.8rem;word-break:break-all;color:var(--text-muted)">
+        ${escHtml(source.substring(0, 80))}${source.length > 80 ? '…' : ''}
+      </div>
+    `;
+    grid.appendChild(card);
+  }
+
+  function replaceLoadingCard(msg) {
+    const grid = document.getElementById('results-grid');
+    let card = document.getElementById(`card-${msg.current}`);
+    if (!card) {
+      card = document.createElement('div');
+      card.id = `card-${msg.current}`;
+      grid.appendChild(card);
+    }
+
+    if (msg.success) {
+      const improvement = msg.post_score - msg.pre_score;
+      const impSign = improvement >= 0 ? '+' : '';
+      card.className = 'result-card success';
+      card.innerHTML = `
+        <div class="rc-top">
+          <div>
+            <div class="rc-company">${escHtml(msg.company)}</div>
+            <div class="rc-title">${escHtml(msg.title)}</div>
+          </div>
+          <div class="rc-status-icon">✅</div>
+        </div>
+        <div class="rc-scores">
+          <div class="rc-score">
+            <div class="label">Before</div>
+            <div class="score-before">${msg.pre_score}%</div>
+          </div>
+          <div class="score-arrow">→</div>
+          <div class="rc-score">
+            <div class="label">After</div>
+            <div class="score-after">${msg.post_score}%</div>
+          </div>
+          <div class="rc-score">
+            <div class="label">Gain</div>
+            <div style="color:${improvement >= 0 ? 'var(--success)' : 'var(--danger)'}">
+              ${impSign}${improvement}%
+            </div>
+          </div>
+        </div>
+        <div class="rc-msg">${escHtml(msg.message)}</div>
+        <a class="btn-download"
+           href="/api/download/${encodeURIComponent(msg.job_id)}/${encodeURIComponent(msg.filename)}"
+           download="${escHtml(msg.filename)}">
+          ⬇ Download PDF
+        </a>
+      `;
+    } else {
+      card.className = 'result-card failed';
+      card.innerHTML = `
+        <div class="rc-top">
+          <div>
+            <div class="rc-company">${escHtml(msg.company || 'Unknown')}</div>
+            <div class="rc-title">${escHtml(msg.title || 'Job')}</div>
+          </div>
+          <div class="rc-status-icon">❌</div>
+        </div>
+        <div class="rc-msg">${escHtml(msg.message)}</div>
+      `;
+    }
+  }
+
+  // ── UI utilities ───────────────────────────────────────────────────────────
+  function setBar(pct, label) {
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('bar-pct').textContent = pct + '%';
+    document.getElementById('bar-label-text').textContent = label;
+  }
+
+  function setStatus(msg) {
+    document.getElementById('status-msg').textContent = msg;
+  }
+
+  function showError(msg) {
+    document.getElementById('error-msg').textContent = msg;
+    document.getElementById('error-banner').classList.add('visible');
+    setStatus('An error occurred.');
+  }
+
+  function resetSubmitBtn() {
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = false; btn.classList.remove('loading');
+  }
+
+  function startOver() {
+    document.getElementById('progress-section').classList.remove('visible');
+    document.getElementById('form-section').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('results-grid').innerHTML = '';
+    document.getElementById('complete-banner').classList.remove('visible');
+    document.getElementById('error-banner').classList.remove('visible');
+    setBar(0, 'Processing…');
+    if (eventSource) eventSource.close();
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+  }
+
+  // Update link count on input
+  document.addEventListener('input', e => {
+    if (e.target.closest('.link-row')) updateLinkCount();
+  });
+</script>
+</body>
+</html>
