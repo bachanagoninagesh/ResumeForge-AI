@@ -18,7 +18,7 @@ from src.utils.slug import slugify
 
 
 def main() -> None:
-    load_dotenv()
+    load_dotenv(override=True)
     args = parse_args()
     settings = get_settings()
 

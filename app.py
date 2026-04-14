@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 from flask import Flask, Response, jsonify, render_template, request, send_file
 from werkzeug.utils import secure_filename
 
-load_dotenv()
+load_dotenv(override=True)
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024   # 20 MB upload limit
