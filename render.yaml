@@ -3,14 +3,12 @@ services:
     name: resumeforge-ai
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python app.py
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 180
     plan: free
     envVars:
       - key: ANTHROPIC_API_KEY
-        sync: false          # set this manually in Render dashboard
+        sync: false          # set this manually in Render dashboard — never commit your key
       - key: ANTHROPIC_MODEL
-        value: claude-opus-4-6
+        value: claude-sonnet-4-6
       - key: REQUEST_TIMEOUT_SECONDS
-        value: "120"
-      - key: PORT
-        value: "5000"
+        value: "150"

@@ -187,6 +187,7 @@ def _run_job(
         from src.extractors.resume_parser import parse_resume_text
         from src.llm.anthropic_client import ResumeGenerator
         from src.postprocess.resume_optimizer import optimize_resume
+        from src.renderers.docx_resume import render_resume_docx
         from src.renderers.pdf_resume import render_resume_pdf
         from src.scoring.ats_keywords import overlap_score
         from src.settings import get_settings
@@ -297,12 +298,20 @@ def _run_job(
             ])
             post_score, _ = overlap_score(resume_score_text, job.text)
 
-            # ── Render PDF ──────────────────────────────────────────────────────
+            # ── Render PDF + DOCX ───────────────────────────────────────────────
             company_slug = slugify(job.company or "company")
             title_slug = slugify(job.title or tailored.target_title or "role")
-            pdf_path = output_dir / f"{company_slug}_{title_slug}_resume.pdf"
+            base_name = f"{company_slug}_{title_slug}_resume"
+
+            pdf_path = output_dir / f"{base_name}.pdf"
             render_resume_pdf(tailored, pdf_path)
             pdf_files.append(pdf_path)
+
+            docx_path = output_dir / f"{base_name}.docx"
+            try:
+                render_resume_docx(tailored, docx_path)
+            except Exception:
+                docx_path = None   # DOCX failure is non-fatal
 
             _push(q, {
                 "type": "job_result",
@@ -313,10 +322,11 @@ def _run_job(
                 "company": job.company or "Unknown",
                 "title": job.title or tailored.target_title or "Unknown",
                 "filename": pdf_path.name,
+                "docx_filename": docx_path.name if docx_path else None,
                 "job_id": job_id,
                 "pre_score": round(pre_score * 100),
                 "post_score": round(post_score * 100),
-                "message": f"Resume created: {pdf_path.name}",
+                "message": f"Resume created — PDF + DOCX",
             })
 
         # ── Email delivery ──────────────────────────────────────────────────────

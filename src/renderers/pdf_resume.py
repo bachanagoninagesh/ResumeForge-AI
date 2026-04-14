@@ -1,24 +1,26 @@
 """
-PDF Resume Renderer — crisp, vivid, professional styling.
+PDF Resume Renderer — styled to match reference resume.
 
-Visual design decisions:
-  - Name: ALL CAPS, large bold, pure black — commanding and clean
-  - Contact: deep charcoal #1A1A1A — readable, not washed out
-  - Section headers: deep navy #1F3864 bold + full-width navy rule
-  - Body text: pure black — maximum contrast, ATS-friendly
-  - Bullets: real • characters, consistent indent
-  - Two-col skills: sharp bold category labels
-  - Education: compact 2-line strict layout
-  - All content indented 4pt inside section rules
+Visual design:
+  - Name: ALL CAPS, large bold, centered, pure black (~24 pt)
+  - Contact: near-black; LinkedIn/GitHub links in blue
+  - Section headers: medium blue #2E5FA3, bold, uppercase, full-width rule beneath
+  - Body/summary/bullets: pure black, fully justified
+  - Project subheadings: italic (not bold) — matches reference
+  - Two-col skills: bold category labels
+  - Education: degree bold black, school name in blue
+  - Certifications: 3 per row with bullet separator
+  - White background, crisp vector text — sharp at any zoom
 """
 
 from __future__ import annotations
 
+import re
 from io import BytesIO
 from pathlib import Path
 
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
@@ -41,17 +43,16 @@ MT = 0.38 * inch
 MB = 0.36 * inch
 CW = PAGE_W - ML - MR           # ≈ 518.4 pt
 
-# Content indent — all body text sits 4pt inside the section rule
+# Content indent — body text sits 4 pt inside the section rule
 CI = 4
 
-# ── Colour palette — crisp, vivid, maximum contrast ───────────────────────────
-NAVY        = colors.HexColor("#1A3B99")   # vivid royal blue for headers & rules
-BLACK       = colors.HexColor("#000000")   # pure black for all body text
-CONTACT_CLR = colors.HexColor("#111111")   # near-pure black for contact line
-BULLET_CLR  = colors.HexColor("#1A3B99")   # vivid royal blue bullets
-RULE_CLR    = colors.HexColor("#1A3B99")   # vivid royal blue rules
+# ── Colour palette — matches reference resume ─────────────────────────────────
+BLUE        = colors.HexColor("#2E5FA3")   # medium professional blue (headers, rules, links)
+BLUE_HEX    = "2E5FA3"                     # for ReportLab HTML font tags
+BLACK       = colors.HexColor("#000000")
+CONTACT_CLR = colors.HexColor("#111111")
 
-# ── Font-size ladder ───────────────────────────────────────────────────────────
+# ── Font-size ladder (body text) — auto-shrinks to fit 1 page ─────────────────
 _FONT_SIZES = [9.2, 8.9, 8.6, 8.3, 8.0, 7.7]
 
 
@@ -79,29 +80,27 @@ def _build(buf: BytesIO, r: TailoredResume, fs: float) -> int:
     S  = _styles(fs)
     st = []
 
-    # ── NAME — ALL CAPS, large, pure black, centered ──────────────────────────
+    # ── NAME — ALL CAPS, large bold, centered ─────────────────────────────────
     name = (r.contact.name or "Candidate").upper()
     st.append(Paragraph(name, S["name"]))
-
-    # ── Small gap between name and contact ────────────────────────────────────
     st.append(Spacer(1, 0.030 * inch))
 
-    # ── CONTACT LINE — dark charcoal, centered ────────────────────────────────
+    # ── CONTACT LINE — links in blue ──────────────────────────────────────────
     parts = [p for p in [
         r.contact.email, r.contact.phone, r.contact.location,
         r.contact.linkedin, r.contact.portfolio,
     ] if p]
     if parts:
-        st.append(Paragraph(" | ".join(parts), S["contact"]))
+        st.append(Paragraph(_fmt_contact(parts), S["contact"]))
 
-    # ── HEADER RULE — full width, navy, 1.2pt ─────────────────────────────────
+    # ── HEADER RULE ───────────────────────────────────────────────────────────
     st.append(Spacer(1, 0.042 * inch))
-    st.append(HRFlowable(width="100%", thickness=1.2, color=RULE_CLR,
+    st.append(HRFlowable(width="100%", thickness=1.2, color=BLUE,
                           spaceBefore=0, spaceAfter=0))
 
     # ── PROFESSIONAL SUMMARY ──────────────────────────────────────────────────
     if r.summary:
-        st.append(Spacer(1, 0.070 * inch))   # extra gap after header rule
+        st.append(Spacer(1, 0.070 * inch))
         st.append(Paragraph("PROFESSIONAL SUMMARY", S["section"]))
         st.extend(_sec_rule())
         st.append(Paragraph(r.summary, S["body"]))
@@ -198,8 +197,25 @@ def _sec_gap() -> list:
     return [Spacer(1, 0.036 * inch)]
 
 def _sec_rule() -> list:
-    return [HRFlowable(width="100%", thickness=0.9, color=RULE_CLR,
+    return [HRFlowable(width="100%", thickness=0.9, color=BLUE,
                        spaceBefore=1, spaceAfter=3)]
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Contact line formatter — LinkedIn / GitHub / URLs rendered in blue
+# ══════════════════════════════════════════════════════════════════════════════
+
+_URL_RE = re.compile(r"(https?://\S+|linkedin\.com\S*|github\.com\S*)", re.I)
+
+def _fmt_contact(parts: list[str]) -> str:
+    """Join contact parts with ' | '; colour URL-like fragments blue."""
+    formatted = []
+    for p in parts:
+        if _URL_RE.search(p):
+            formatted.append(f'<font color="#{BLUE_HEX}">{p}</font>')
+        else:
+            formatted.append(p)
+    return " | ".join(formatted)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -209,7 +225,7 @@ def _sec_rule() -> list:
 def _render_exp(exp, S: dict) -> list:
     elems = []
 
-    # Title (bold left) ←→ Dates (italic right)
+    # Job title (bold left) — Dates (italic right)
     elems.append(_lr_table(
         f"<b>{exp.title or ''}</b>",
         f"<i>{exp.dates or ''}</i>",
@@ -217,7 +233,7 @@ def _render_exp(exp, S: dict) -> list:
         left_frac=0.72,
     ))
 
-    # Company | Location (italic left)
+    # Company | Location — italic
     co_loc = _join([exp.company, exp.location], " | ")
     if co_loc:
         elems.append(Paragraph(f"<i>{co_loc}</i>", S["company_line"]))
@@ -228,10 +244,10 @@ def _render_exp(exp, S: dict) -> list:
         if t:
             elems.append(Paragraph(f"\u2022  {t}", S["bullet"]))
 
-    # Project subheadings + bullets
+    # Project subheadings (italic) + bullets
     for sec in exp.sections:
         if sec.name:
-            elems.append(Paragraph(sec.name, S["subhead"]))
+            elems.append(Paragraph(f"<i>{sec.name}</i>", S["subhead"]))
         for b in sec.bullets:
             t = b.strip().lstrip("-•").strip()
             if t:
@@ -294,7 +310,7 @@ def _render_skills(skills: list, S: dict, fs: float) -> list:
 
 
 def _render_certs(certs: list, S: dict) -> list:
-    """3 certs per line, separated by spaced bullet. Gap between lines."""
+    """3 certs per row, bullet-separated. Matches reference 3-column layout."""
     clean = [c.strip() for c in certs if c.strip()]
     lines = []
     for i in range(0, len(clean), 3):
@@ -306,11 +322,21 @@ def _render_certs(certs: list, S: dict) -> list:
 
 
 def _render_edu(edu, S: dict) -> list:
-    """Strict 1 line per degree — compact font prevents wrapping."""
-    left  = _join([edu.degree, edu.school], " | ")
-    right = _join([edu.details, edu.dates], " | ")
+    """Degree bold black | School bold blue — dates italic right-aligned."""
+    degree = (edu.degree or "").strip()
+    school = (edu.school or "").strip()
+    right  = _join([edu.details, edu.dates], " | ")
+
+    # Build left cell: "Degree | School" with school in blue
+    if degree and school:
+        left_html = f"<b>{degree}</b> | <font color=\"#{BLUE_HEX}\"><b>{school}</b></font>"
+    elif degree:
+        left_html = f"<b>{degree}</b>"
+    else:
+        left_html = f"<font color=\"#{BLUE_HEX}\"><b>{school}</b></font>"
+
     return [_lr_table(
-        f"<b>{left}</b>",
+        left_html,
         f"<i>{right}</i>",
         S["edu_left"], S["edu_right"],
         left_frac=0.60,
@@ -330,7 +356,7 @@ def _render_activity(item, S: dict) -> list:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Table helper — all content indented CI pts inside section rule
+# Table helper — content indented CI pts inside section rule
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _lr_table(
@@ -368,7 +394,7 @@ def _join(parts: list, sep: str) -> str:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Style sheet — vivid, sharp, professional
+# Style sheet
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _styles(fs: float) -> dict:
@@ -377,17 +403,17 @@ def _styles(fs: float) -> dict:
     BH = 7        # bullet hanging
 
     return {
-        # ── Header name — ALL CAPS, large, pure black ────────────────────────
+        # ── Name — large, ALL CAPS, bold, centered, black ────────────────────
         "name": ParagraphStyle(
             "name", parent=base,
             fontName="Helvetica-Bold",
-            fontSize=fs + 8.0,
-            leading=(fs + 8.0) * 1.15,
+            fontSize=fs + 13.0,           # ~22 pt at base fs — matches reference
+            leading=(fs + 13.0) * 1.15,
             alignment=TA_CENTER,
             textColor=BLACK,
             spaceAfter=0,
         ),
-        # ── Contact line — dark charcoal, not gray ───────────────────────────
+        # ── Contact line — near-black; URLs blue via _fmt_contact ────────────
         "contact": ParagraphStyle(
             "contact", parent=base,
             fontName="Helvetica",
@@ -397,28 +423,28 @@ def _styles(fs: float) -> dict:
             textColor=CONTACT_CLR,
             spaceAfter=0,
         ),
-        # ── Section heading — deep navy bold ─────────────────────────────────
+        # ── Section heading — medium blue, bold ──────────────────────────────
         "section": ParagraphStyle(
             "section", parent=base,
             fontName="Helvetica-Bold",
             fontSize=fs + 0.5,
             leading=(fs + 0.5) * 1.18,
             alignment=TA_LEFT,
-            textColor=NAVY,
+            textColor=BLUE,
             spaceBefore=0, spaceAfter=0,
         ),
-        # ── Body / summary — pure black, max contrast ────────────────────────
+        # ── Body / summary — justified, pure black ───────────────────────────
         "body": ParagraphStyle(
             "body", parent=base,
             fontName="Helvetica",
             fontSize=fs,
             leading=fs * 1.34,
-            alignment=TA_LEFT,
+            alignment=TA_JUSTIFY,
             textColor=BLACK,
             leftIndent=CI,
             spaceAfter=0,
         ),
-        # ── Two-col row: left (bold role/degree) ─────────────────────────────
+        # ── Row left: bold job title / degree ────────────────────────────────
         "row_left": ParagraphStyle(
             "row_left", parent=base,
             fontName="Helvetica-Bold",
@@ -428,7 +454,7 @@ def _styles(fs: float) -> dict:
             textColor=BLACK,
             spaceAfter=0,
         ),
-        # ── Two-col row: right (italic dates) ────────────────────────────────
+        # ── Row right: italic dates, right-aligned ────────────────────────────
         "row_right": ParagraphStyle(
             "row_right", parent=base,
             fontName="Helvetica-Oblique",
@@ -438,7 +464,7 @@ def _styles(fs: float) -> dict:
             textColor=BLACK,
             spaceAfter=0,
         ),
-        # ── Company / location italic line ───────────────────────────────────
+        # ── Company / location line — italic ──────────────────────────────────
         "company_line": ParagraphStyle(
             "company_line", parent=base,
             fontName="Helvetica-Oblique",
@@ -449,10 +475,10 @@ def _styles(fs: float) -> dict:
             leftIndent=CI,
             spaceAfter=1,
         ),
-        # ── Project subheading — bold, navy tint ─────────────────────────────
+        # ── Project subheading — italic only (matches reference) ─────────────
         "subhead": ParagraphStyle(
             "subhead", parent=base,
-            fontName="Helvetica-Bold",
+            fontName="Helvetica-Oblique",
             fontSize=fs,
             leading=fs * 1.26,
             alignment=TA_LEFT,
@@ -460,7 +486,7 @@ def _styles(fs: float) -> dict:
             leftIndent=CI,
             spaceBefore=3, spaceAfter=0,
         ),
-        # ── Bullet with hanging indent ────────────────────────────────────────
+        # ── Bullet — justified, hanging indent ───────────────────────────────
         "bullet": ParagraphStyle(
             "bullet", parent=base,
             fontName="Helvetica",
@@ -468,11 +494,11 @@ def _styles(fs: float) -> dict:
             leading=fs * 1.28,
             leftIndent=BI,
             firstLineIndent=-BH,
-            alignment=TA_LEFT,
+            alignment=TA_JUSTIFY,
             textColor=BLACK,
             spaceAfter=0.8,
         ),
-        # ── Activity bullet (no hanging) ──────────────────────────────────────
+        # ── Activity bullet ───────────────────────────────────────────────────
         "bullet_plain": ParagraphStyle(
             "bullet_plain", parent=base,
             fontName="Helvetica",
@@ -484,7 +510,7 @@ def _styles(fs: float) -> dict:
             textColor=BLACK,
             spaceAfter=0.8,
         ),
-        # ── Education compact styles — prevents 3rd line ──────────────────────
+        # ── Education compact styles ──────────────────────────────────────────
         "edu_left": ParagraphStyle(
             "edu_left", parent=base,
             fontName="Helvetica-Bold",
@@ -507,7 +533,7 @@ def _styles(fs: float) -> dict:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Page-count tracking
+# Page-count tracking + explicit white background
 # ══════════════════════════════════════════════════════════════════════════════
 
 class _Doc(SimpleDocTemplate):
@@ -516,7 +542,7 @@ class _Doc(SimpleDocTemplate):
         self.page_count = 0
 
     def handle_pageBegin(self):
-        # Paint an explicit bright-white background so no viewer shows grey/cream
+        # Explicit white background — crisp on any PDF viewer
         self.canv.setFillColorRGB(1.0, 1.0, 1.0)
         self.canv.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
         super().handle_pageBegin()

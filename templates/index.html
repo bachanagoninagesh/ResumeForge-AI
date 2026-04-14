@@ -538,6 +538,7 @@
 
     .rc-msg { font-size: .83rem; color: var(--text-muted); margin-bottom: .9rem; }
 
+    .rc-downloads { display: flex; gap: .6rem; flex-wrap: wrap; }
     .btn-download {
       display: inline-flex; align-items: center; gap: .4rem;
       background: linear-gradient(135deg, var(--primary), var(--primary-dk));
@@ -548,6 +549,11 @@
       box-shadow: 0 3px 12px rgba(79,142,247,.3);
     }
     .btn-download:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(79,142,247,.4); }
+    .btn-download.docx {
+      background: linear-gradient(135deg, #1a5c38, #217346);
+      box-shadow: 0 3px 12px rgba(33,115,70,.3);
+    }
+    .btn-download.docx:hover { box-shadow: 0 5px 18px rgba(33,115,70,.4); }
 
     .rc-spinner {
       width: 18px; height: 18px;
@@ -1246,11 +1252,18 @@
           </div>
         </div>
         <div class="rc-msg">${escHtml(msg.message)}</div>
-        <a class="btn-download"
-           href="/api/download/${encodeURIComponent(msg.job_id)}/${encodeURIComponent(msg.filename)}"
-           download="${escHtml(msg.filename)}">
-          ⬇ Download PDF
-        </a>
+        <div class="rc-downloads">
+          <a class="btn-download"
+             href="/api/download/${encodeURIComponent(msg.job_id)}/${encodeURIComponent(msg.filename)}"
+             download="${escHtml(msg.filename)}">
+            ⬇ PDF
+          </a>
+          ${msg.docx_filename ? `<a class="btn-download docx"
+             href="/api/download/${encodeURIComponent(msg.job_id)}/${encodeURIComponent(msg.docx_filename)}"
+             download="${escHtml(msg.docx_filename)}">
+            ⬇ Word
+          </a>` : ''}
+        </div>
       `;
     } else {
       card.className = 'result-card failed';
