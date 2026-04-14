@@ -54,15 +54,52 @@ class JobFetchError(RuntimeError):
     pass
 
 
+def load_jobs_data(path: Path) -> list[dict]:
+    """Load jobs from jobs.json — list of {url, text} dicts submitted by the browser."""
+    if not path.exists():
+        raise JobSourceError(f"Jobs data not found: {path}")
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return [
+        j for j in data
+        if isinstance(j, dict) and (j.get("url", "").strip() or j.get("text", "").strip())
+    ]
+
+
+def parse_job_entry(url: str = "", text: str = "", timeout: int = 25) -> JobPosting:
+    """Parse a job from URL and/or pasted text.
+
+    Priority:
+      1. Try fetching the URL (if provided).
+      2. If URL fetch fails but pasted text exists, use the text as fallback.
+      3. If only text is provided, use it directly.
+    """
+    url  = (url  or "").strip()
+    text = (text or "").strip()
+
+    if url:
+        try:
+            return _parse_job_url(url, timeout)
+        except (JobFetchError, JobSourceError):
+            if text:
+                # URL blocked / unavailable — fall back to pasted JD
+                return _parse_text_job(text=text, source=url)
+            raise   # No fallback text — propagate the original error
+
+    if text:
+        return _parse_text_job(text=text, source="pasted-jd")
+
+    raise JobSourceError("No job URL or job description text was provided.")
+
+
+# ── Legacy helpers (kept for CLI / test compatibility) ─────────────────────────
+
 def load_job_sources(path: Path) -> list[str]:
     if not path.exists():
         raise JobSourceError(f"Job source file not found: {path}")
     lines = [line.strip() for line in path.read_text(encoding="utf-8").splitlines()]
     sources = [line for line in lines if line and not line.startswith("#")]
     if not sources:
-        raise JobSourceError(
-            "No job links found. Add one URL per line in data/input/job_links.txt"
-        )
+        raise JobSourceError("No job links found.")
     return sources
 
 

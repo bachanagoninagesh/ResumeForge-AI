@@ -1,8 +1,0 @@
-# Put one job URL or local .txt path per line.
-# Example:
-# https://company.com/jobs/123
-# data/input/job_description_1.txt
-
-https://jobs.aon.com/jobs/98121?lang=en-us&iis=Job+Board&iisn=LinkedIn
-https://workforcenow.adp.com/mascsr/default/mdf/recruitment/recruitment.html?cid=1e214623-c126-4ee7-a61f-d40253fd1123&ccId=19000101_000001&jobId=18581&source=LR&lang=en_US&source=LI&source=LI
-https://www.workstream.us/j/8b8f7e99/refuel-corporate/charleston-77045/business-intelligence-analyst-2901201c?locale=en&referer_source=https://www.refuelmarket.com/

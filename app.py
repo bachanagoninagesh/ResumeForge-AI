@@ -63,13 +63,13 @@ def process():
     """
     Accepts multipart/form-data with:
       resume     — file upload (PDF / DOCX / DOC / TXT)
-      job_links  — newline-separated list of job URLs
+      jobs_json  — JSON array of {url, text} objects
       email      — optional recipient email address
     Returns {"job_id": "...", "total": N}
     """
-    resume_file = request.files.get("resume")
-    job_links_raw = request.form.get("job_links", "").strip()
-    email = request.form.get("email", "").strip()
+    resume_file   = request.files.get("resume")
+    jobs_json_raw = request.form.get("jobs_json", "").strip()
+    email         = request.form.get("email", "").strip()
 
     # ── Validation ─────────────────────────────────────────────────────────────
     errors: list[str] = []
@@ -78,11 +78,20 @@ def process():
     elif not _allowed(resume_file.filename):
         errors.append("Unsupported file type. Upload PDF, DOCX, DOC, or TXT.")
 
-    links = [ln.strip() for ln in job_links_raw.splitlines() if ln.strip()]
-    if not links:
-        errors.append("Please enter at least one job link.")
-    if len(links) > 20:
-        errors.append("Maximum 20 job links per run.")
+    jobs_data: list[dict] = []
+    try:
+        raw = json.loads(jobs_json_raw) if jobs_json_raw else []
+        jobs_data = [
+            j for j in raw
+            if isinstance(j, dict) and (j.get("url", "").strip() or j.get("text", "").strip())
+        ]
+    except (json.JSONDecodeError, TypeError):
+        errors.append("Invalid job data submitted — please try again.")
+
+    if not jobs_data:
+        errors.append("Please add at least one job link or paste a job description.")
+    if len(jobs_data) > 15:
+        errors.append("Maximum 15 jobs per run.")
 
     if errors:
         return jsonify({"error": "\n".join(errors)}), 400
@@ -97,21 +106,21 @@ def process():
     resume_path = job_dir / safe_name
     resume_file.save(str(resume_path))
 
-    links_path = job_dir / "job_links.txt"
-    links_path.write_text("\n".join(links), encoding="utf-8")
+    jobs_path = job_dir / "jobs.json"
+    jobs_path.write_text(json.dumps(jobs_data), encoding="utf-8")
 
     # ── Register job ────────────────────────────────────────────────────────────
     q: queue.Queue = queue.Queue()
-    _jobs[job_id] = {"status": "queued", "links": links, "email": email, "pdfs": []}
+    _jobs[job_id] = {"status": "queued", "total": len(jobs_data), "email": email, "pdfs": []}
     _job_queues[job_id] = q
 
     threading.Thread(
         target=_run_job,
-        args=(job_id, resume_path, links_path, output_dir, email),
+        args=(job_id, resume_path, jobs_path, output_dir, email),
         daemon=True,
     ).start()
 
-    return jsonify({"job_id": job_id, "total": len(links)})
+    return jsonify({"job_id": job_id, "total": len(jobs_data)})
 
 
 @app.route("/api/status/<job_id>")
@@ -156,7 +165,7 @@ def download_pdf(job_id: str, filename: str):
     except ValueError:
         return jsonify({"error": "Invalid path."}), 403
 
-    if not pdf_path.exists() or pdf_path.suffix.lower() != ".pdf":
+    if not pdf_path.exists() or pdf_path.suffix.lower() not in (".pdf", ".docx"):
         return jsonify({"error": "File not found."}), 404
 
     return send_file(str(pdf_path), as_attachment=True, download_name=safe_name)
@@ -183,7 +192,7 @@ def _run_job(
         # Lazy imports — avoids loading heavy modules at startup
         from src.data.profile_loader import load_profile
         from src.emailer import send_results_email
-        from src.extractors.job_parser import JobFetchError, load_job_sources, parse_job_source
+        from src.extractors.job_parser import JobFetchError, JobSourceError, load_jobs_data, parse_job_entry
         from src.extractors.resume_parser import parse_resume_text
         from src.llm.anthropic_client import ResumeGenerator
         from src.postprocess.resume_optimizer import optimize_resume
@@ -213,44 +222,56 @@ def _run_job(
             _push(q, {"type": "error", "message": f"Could not read your resume: {exc}"})
             return
 
-        # ── Load job links ──────────────────────────────────────────────────────
-        _push(q, {"type": "status", "message": "Loading job listings..."})
-        job_sources = load_job_sources(links_path)
-        total = len(job_sources)
+        # ── Load job entries ────────────────────────────────────────────────────
+        _push(q, {"type": "status", "message": "Loading job entries..."})
+        try:
+            jobs_data = load_jobs_data(jobs_path)
+        except Exception as exc:
+            _push(q, {"type": "error", "message": f"Could not load job data: {exc}"})
+            return
 
+        total = len(jobs_data)
         if total == 0:
-            _push(q, {"type": "error", "message": "No valid job links were found."})
+            _push(q, {"type": "error", "message": "No valid jobs were submitted."})
             return
 
         _push(q, {"type": "total", "total": total,
-                  "message": f"Found {total} job link(s). Tailoring your resume for each one..."})
+                  "message": f"Processing {total} job(s). Tailoring your resume for each one..."})
 
         profile = load_profile(None)
         generator = ResumeGenerator(settings, Path("prompts/resume_prompt.txt"))
         pdf_files: list[Path] = []
 
-        for idx, source in enumerate(job_sources, start=1):
-            # ── Fetch job ───────────────────────────────────────────────────────
+        for idx, job_entry in enumerate(jobs_data, start=1):
+            job_url  = job_entry.get("url",  "").strip()
+            job_text = job_entry.get("text", "").strip()
+            label = job_url or (job_text[:70] + "…") if job_text else f"Job #{idx}"
+
+            # ── Fetch / parse job ───────────────────────────────────────────────
             _push(q, {
                 "type": "progress",
                 "current": idx,
                 "total": total,
                 "message": f"Fetching job {idx} of {total}...",
-                "source": str(source),
+                "source": label,
             })
 
             try:
-                job = parse_job_source(source, timeout=settings.request_timeout_seconds)
-            except JobFetchError as exc:
+                job = parse_job_entry(
+                    url=job_url,
+                    text=job_text,
+                    timeout=settings.request_timeout_seconds,
+                )
+            except (JobFetchError, JobSourceError) as exc:
                 _push(q, {
                     "type": "job_result",
                     "current": idx,
                     "total": total,
                     "success": False,
-                    "source": str(source),
+                    "source": label,
                     "company": "Unknown",
                     "title": "Unknown",
-                    "message": f"Skipped — could not fetch job: {exc}",
+                    "message": f"Skipped — {exc}",
                 })
                 continue
 
@@ -265,7 +286,7 @@ def _run_job(
                     f"Generating tailored resume for "
                     f"{job.company or 'company'} — {job.title or 'position'}..."
                 ),
-                "source": str(source),
+                "source": label,
             })
 
             try:
@@ -281,7 +302,7 @@ def _run_job(
                     "current": idx,
                     "total": total,
                     "success": False,
-                    "source": str(source),
+                    "source": label,
                     "company": job.company or "Unknown",
                     "title": job.title or "Unknown",
                     "message": f"AI generation failed — {exc}",

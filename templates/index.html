@@ -334,23 +334,34 @@
     .file-chosen.visible { display: flex; }
 
     /* Job links */
-    .links-list { display: flex; flex-direction: column; gap: .55rem; }
-    .link-row {
-      display: flex; align-items: center; gap: .5rem;
-    }
-    .link-row input {
+    .links-list { display: flex; flex-direction: column; gap: .7rem; }
+    .link-row { display: flex; flex-direction: column; gap: .35rem; }
+    .link-row-top { display: flex; align-items: center; gap: .5rem; }
+    .link-row-top input {
       flex: 1; padding: .65rem .9rem;
       border: 1px solid var(--border); border-radius: var(--radius-sm);
       font-size: .9rem; font-family: inherit;
       transition: border-color .2s, box-shadow .2s;
-      outline: none;
-      background: #fff;
+      outline: none; background: #fff;
     }
-    .link-row input:focus {
+    .link-row-top input:focus {
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(79,142,247,.12);
     }
-    .link-row input::placeholder { color: #94a3b8; }
+    .link-row-top input::placeholder { color: #94a3b8; }
+    .btn-toggle-jd {
+      flex-shrink: 0; padding: .52rem .75rem;
+      border: 1px dashed var(--border); border-radius: var(--radius-sm);
+      background: transparent; color: var(--text-muted);
+      cursor: pointer; font-size: .78rem; font-weight: 600; white-space: nowrap;
+      transition: background .15s, color .15s, border-color .15s;
+      font-family: inherit;
+    }
+    .btn-toggle-jd:hover { background: var(--bg); color: var(--text); border-color: var(--primary); }
+    .btn-toggle-jd.active {
+      border-color: var(--primary); color: var(--primary);
+      background: rgba(79,142,247,.08);
+    }
     .btn-remove-link {
       width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
       background: transparent; border: 1px solid var(--border);
@@ -359,6 +370,20 @@
       transition: background .15s, color .15s, border-color .15s;
     }
     .btn-remove-link:hover { background: #fee2e2; border-color: #fca5a5; color: var(--danger); }
+    .jd-paste-wrap { display: none; }
+    .jd-paste-wrap.visible { display: block; }
+    .jd-paste-area {
+      width: 100%; min-height: 110px; max-height: 220px; resize: vertical;
+      border: 1px solid var(--primary); border-radius: var(--radius-sm);
+      padding: .6rem .85rem; font-family: inherit; font-size: .83rem;
+      color: var(--text); background: #f8fbff; line-height: 1.5; outline: none;
+      transition: box-shadow .2s;
+    }
+    .jd-paste-area:focus { box-shadow: 0 0 0 3px rgba(79,142,247,.12); }
+    .jd-paste-area::placeholder { color: #94a3b8; }
+    .jd-hint {
+      font-size: .73rem; color: var(--text-muted); margin-top: .2rem;
+    }
 
     .links-actions {
       display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .9rem;
@@ -785,8 +810,8 @@
           <div class="form-block">
             <div class="block-header">
               <div class="block-icon purple">🔗</div>
-              <span class="block-label">Step 2 — Job Links</span>
-              <span class="block-hint">Min 1 · Max 15</span>
+              <span class="block-label">Step 2 — Job Links or Job Descriptions</span>
+              <span class="block-hint">URL or paste JD · Max 15</span>
             </div>
 
             <div class="links-list" id="links-list">
@@ -982,13 +1007,34 @@
     row.className = 'link-row';
     row.dataset.id = linkCount;
     row.innerHTML = `
-      <input type="url" name="link_${linkCount}" placeholder="https://careers.company.com/job/12345"
-             value="${escHtml(value)}" />
-      <button type="button" class="btn-remove-link" onclick="removeLinkRow(this)" title="Remove">✕</button>
+      <div class="link-row-top">
+        <input type="url" placeholder="https://careers.company.com/job/12345"
+               value="${escHtml(value)}" />
+        <button type="button" class="btn-toggle-jd" onclick="toggleJD(this)"
+                title="No URL? Paste the job description instead">📋 Paste JD</button>
+        <button type="button" class="btn-remove-link" onclick="removeLinkRow(this)" title="Remove">✕</button>
+      </div>
+      <div class="jd-paste-wrap">
+        <textarea class="jd-paste-area"
+          placeholder="Paste the full job description here (title, company, requirements, responsibilities)…&#10;Use this if you don't have a URL or if the site blocks our scraper."></textarea>
+        <div class="jd-hint">Tip: copy the entire job posting text — the more detail, the better the ATS match.</div>
+      </div>
     `;
     list.appendChild(row);
     updateLinkCount();
     return row;
+  }
+
+  function toggleJD(btn) {
+    const row = btn.closest('.link-row');
+    const wrap = row.querySelector('.jd-paste-wrap');
+    const area = row.querySelector('.jd-paste-area');
+    const isOpen = wrap.classList.contains('visible');
+    wrap.classList.toggle('visible', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+    btn.textContent = isOpen ? '📋 Paste JD' : '✕ Hide JD';
+    if (!isOpen) area.focus();
+    updateLinkCount();
   }
 
   function removeLinkRow(btn) {
@@ -1000,15 +1046,19 @@
   }
 
   function updateLinkCount() {
-    const rows = document.querySelectorAll('.link-row input');
-    const filled = [...rows].filter(i => i.value.trim()).length;
+    const rows = [...document.querySelectorAll('.link-row')];
+    const filled = rows.filter(row => {
+      const url = row.querySelector('input[type="url"]')?.value.trim();
+      const jd  = row.querySelector('.jd-paste-area')?.value.trim();
+      return url || jd;
+    }).length;
     document.getElementById('link-count-num').textContent = rows.length;
     document.getElementById('link-count').innerHTML =
       `<span>${rows.length}</span> row(s) · <span>${filled}</span> filled`;
   }
 
   document.getElementById('btn-add-link').addEventListener('click', () => {
-    if (linkCount >= 15) { alert('Maximum 15 job links.'); return; }
+    if (linkCount >= 15) { alert('Maximum 15 job entries.'); return; }
     const row = addLinkRow();
     row.querySelector('input').focus();
   });
@@ -1026,18 +1076,15 @@
 
   function importPastedLinks() {
     const raw = document.getElementById('paste-area').value;
-    // Split on newlines, commas, or spaces; keep only non-empty strings
     const links = raw
-      .split(/[\n,\s]+/)
+      .split(/[\n,]+/)
       .map(s => s.trim())
       .filter(s => s.startsWith('http'));
 
-    if (!links.length) { alert('No valid URLs found.'); return; }
+    if (!links.length) { alert('No valid URLs found. Each URL must start with http.'); return; }
 
-    // Clear existing rows
     document.getElementById('links-list').innerHTML = '';
     linkCount = 0;
-
     links.slice(0, 15).forEach(l => addLinkRow(l));
     closePasteModal();
   }
@@ -1077,13 +1124,14 @@
     e.preventDefault();
     const form = e.target;
 
-    // Collect all link inputs into one textarea value
-    const links = [...document.querySelectorAll('.link-row input')]
-      .map(i => i.value.trim())
-      .filter(Boolean);
+    // Collect {url, text} pairs from every row
+    const jobs = [...document.querySelectorAll('.link-row')].map(row => ({
+      url:  (row.querySelector('input[type="url"]')?.value  || '').trim(),
+      text: (row.querySelector('.jd-paste-area')?.value     || '').trim(),
+    })).filter(j => j.url || j.text);
 
-    if (!links.length) {
-      alert('Please add at least one job link.'); return;
+    if (!jobs.length) {
+      alert('Please add at least one job link or paste a job description.'); return;
     }
     if (!form.resume.files[0]) {
       alert('Please upload your resume file.'); return;
@@ -1091,7 +1139,7 @@
 
     const fd = new FormData();
     fd.append('resume', form.resume.files[0]);
-    fd.append('job_links', links.join('\n'));
+    fd.append('jobs_json', JSON.stringify(jobs));
     fd.append('email', document.getElementById('email-input').value.trim());
 
     // UI: loading state
@@ -1318,7 +1366,7 @@
       .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
   }
 
-  // Update link count on input
+  // Update link count when any input/textarea inside a link-row changes
   document.addEventListener('input', e => {
     if (e.target.closest('.link-row')) updateLinkCount();
   });
